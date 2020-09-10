@@ -449,7 +449,7 @@ main() {
 	log_success "Found $(domain_count) valid domains!"
 
 	write_output_files
-	#cleanup
+	cleanup
 	global_end=`date +%s`
 	global_runtime=$((global_end-global_start))
 	global_runtimex=$(printf '%dm%ds\n' $(($global_runtime%3600/60)) $(($global_runtime%60)))
