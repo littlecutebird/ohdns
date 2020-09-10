@@ -62,7 +62,7 @@ print_header() {
 ██║   ██║██╔══██║██║  ██║██║╚██╗██║╚════██║
 ╚██████╔╝██║  ██║██████╔╝██║ ╚████║███████║
  ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚══════╝
-                               
+
 "
 	printf "				${COL_PROGNAME}${program_name} ${COL_PROGVERS}${program_version}\n" >&2
 	printf '\n' >&2
