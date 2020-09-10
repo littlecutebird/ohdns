@@ -176,6 +176,7 @@ parse_args() {
 	fi
 
 	if [[ -z "${domains_file}" ]]; then
+		usage
 		echo "Error: output file is required!"
 		echo ""
 		exit 1
