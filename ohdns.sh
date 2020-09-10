@@ -62,7 +62,6 @@ print_header() {
 ██║   ██║██╔══██║██║  ██║██║╚██╗██║╚════██║
 ╚██████╔╝██║  ██║██████╔╝██║ ╚████║███████║
  ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚══════╝
-
 "
 	printf "				${COL_PROGNAME}${program_name} ${COL_PROGVERS}${program_version}\n" >&2
 	printf '\n' >&2
@@ -328,11 +327,22 @@ massdns_resolve() {
 	local tmp_massdns_domain_work2="${tempdir}/domain_work_tmp2.txt"
 	log_message "[MassDNS] Invoking massdns... this can take some time"
 	log_message "[MassDNS] Running the 1st time ..."
+	start=`date +%s`
 	massdns_trusted "${domains_work}" "${tmp_massdns_domain_work1}" "${tmp_massdns_work1}"
+	end=`date +%s`
+	runtime=$((end-start))
+	log_success "[MassDNS] Finished | Duration: ${runtime}s"
+
+	start=`date +%s`
 	log_message "[MassDNS] Running the 2nd time ..."
 	massdns_trusted "${domains_work}" "${tmp_massdns_domain_work2}" "${tmp_massdns_work2}"
+	end=`date +%s`
+	runtime=$((end-start))
+	log_success "[MassDNS] Finished | Duration: ${runtime}s"
+	
 
 	log_message "[MassDNS] Merging output from 2 times."
+	cat "${tmp_massdns_work2}" "${tmp_massdns_work1}" | sort -u > "${massdns_work}"
 	cat "${tmp_massdns_domain_work1}" "${tmp_massdns_domain_work2}" | sort -u > "${domains_work}"
 	log_success "[MassDNS] $(domain_count) domains returned a DNS answer"
 }
