@@ -55,12 +55,14 @@ usage() {
 print_header() {
 	printf "${COL_LOGO}" >&2
 	printf "
- _______ __     _____  _______ _______ 
-|       |  |--.|     \|    |  |     __|
-|   -   |     ||  --  |       |__     |
-|_______|__|__||_____/|__|____|_______|
-                                       
-                                      
+
+ ██████╗ ██╗  ██╗██████╗ ███╗   ██╗███████╗
+██╔═══██╗██║  ██║██╔══██╗████╗  ██║██╔════╝
+██║   ██║███████║██║  ██║██╔██╗ ██║███████╗
+██║   ██║██╔══██║██║  ██║██║╚██╗██║╚════██║
+╚██████╔╝██║  ██║██████╔╝██║ ╚████║███████║
+ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚══════╝
+                               
 "
 	printf "				${COL_PROGNAME}${program_name} ${COL_PROGVERS}${program_version}\n" >&2
 	printf '\n' >&2
@@ -284,10 +286,9 @@ invoke_massdns() {
 
 	local count="$(cat "${domains_file}" | wc -l)"
 
-	printf "${COL_PV}" >&2
 	"${MASSDNS_BIN}" -q -r "${resolvers}" -o S -t A -w "${massdns_outputfile}" --retry SERVFAIL "${domains_file}"
 	cat "${massdns_outputfile}" | awk -F '. ' '{ print $1 }' | sort -u > "${domains_outputfile}"
-	printf "${COL_RESET}" >&2
+
 }
 
 invoke_subfinder() {
@@ -321,8 +322,18 @@ merge_wordlist() {
 }
 
 massdns_resolve() {
+	local tmp_massdns_work1="${tempdir}/massdns_tmp1.txt"
+	local tmp_massdns_work2="${tempdir}/massdns_tmp2.txt"
+	local tmp_massdns_domain_work1="${tempdir}/domain_work_tmp1.txt"
+	local tmp_massdns_domain_work2="${tempdir}/domain_work_tmp2.txt"
 	log_message "[MassDNS] Invoking massdns... this can take some time"
-	massdns_trusted "${domains_work}" "${domains_work}" "${massdns_work}"
+	log_message "[MassDNS] Running the 1st time ..."
+	massdns_trusted "${domains_work}" "${tmp_massdns_domain_work1}" "${tmp_massdns_work1}"
+	log_message "[MassDNS] Running the 2nd time ..."
+	massdns_trusted "${domains_work}" "${tmp_massdns_domain_work2}" "${tmp_massdns_work2}"
+
+	log_message "[MassDNS] Merging output from 2 times."
+	cat "${tmp_massdns_domain_work1}" "${tmp_massdns_domain_work2}" | sort -u > "${domains_work}"
 	log_success "[MassDNS] $(domain_count) domains returned a DNS answer"
 }
 
