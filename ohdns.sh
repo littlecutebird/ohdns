@@ -284,8 +284,8 @@ prepare_domains_list() {
 		cat "${domains_work}" | grep -o '^[a-z0-9\.\-]*$' > "${tempfile_work}"
 		cp "${tempfile_work}" "${domains_work}"
 	fi
-
-	log_success "$(domain_count) domains to resolve with massdns"
+	counted=$(cat "${domains_work}" | wc -l)
+	log_success "${counted} domains to resolve with massdns"
 }
 
 massdns_trusted() {
@@ -326,9 +326,9 @@ invoke_amass() {
 	log_message "[Amass] Running ..."
 	start=`date +%s`
 	if [[ ! -z "${amass_config}" ]]; then
-		"${AMASS_BIN}" enum --passive -nolocaldb -norecursive -noalts -d ${domain} -o "${tempdir}/amass_output.txt" -config ${amass_config} > /dev/null 2>&1
+		"${AMASS_BIN}" enum --passive -nolocaldb -norecursive -noalts -d ${domain} -o "${tempdir}/amass_output.txt" -config ${amass_config} -timeout 8 -exclude "Brute Forcing" > /dev/null 2>&1
 	else
-		"${AMASS_BIN}" enum --passive -nolocaldb -norecursive -noalts -d ${domain} -o "${tempdir}/amass_output.txt" > /dev/null 2>&1
+		"${AMASS_BIN}" enum --passive -nolocaldb -norecursive -noalts -d ${domain} -o "${tempdir}/amass_output.txt" -timeout 8 -exclude "Brute Forcing" > /dev/null 2>&1
 	fi
 	end=`date +%s`
 	runtime=$((end-start))
