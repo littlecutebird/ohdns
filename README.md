@@ -12,6 +12,47 @@ A wrapper does subdomain enumeration with:
 
 ## Usage
 ```
+./ohdns.sh --help
+
+
+ ██████╗ ██╗  ██╗██████╗ ███╗   ██╗███████╗
+██╔═══██╗██║  ██║██╔══██╗████╗  ██║██╔════╝
+██║   ██║███████║██║  ██║██╔██╗ ██║███████╗
+██║   ██║██╔══██║██║  ██║██║╚██╗██║╚════██║
+╚██████╔╝██║  ██║██████╔╝██║ ╚████║███████║
+ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚══════╝
+				OhDNS v1.0
+
+Very fast & accurate dns resolving and bruteforcing.
+
+OhDNS v1.0
+Use subfinder, amass, and massdns to accurately resolve a large amount of subdomains and extract wildcard domains.
+
+Usage:
+	ohdns -wl wordlist.txt -d domain.com -w output.txt
+
+	Example:
+		ohdns [args] [--skip-wildcard-check] [--help] -wl wordlist.txt -d domain.com
+
+	Optional:
+
+		-d, --domain <domain>	Target to scan
+		-wl, --wordlist	<filename>	Wordlist to do bruteforce
+		-sc, --subfinder-config	<filename>	SubFinder config file
+		-ac, --amass-config	<filename>	Amass config file
+		-i, --ips	Show ips in output
+		-sw, --skip-wildcard-check		Do no perform wildcard detection and filtering
+
+		-w,  --write <filename>			Write valid domains to a file
+		-wm, --write-massdns <filename>		Write massdns results to a file
+		-ww, --write-wildcards <filename>	Write wildcard root subdomains to a file
+		-wa, --write-answers <filename>		Write wildcard DNS answers to a file
+
+		-h, --help				Display this message
+```
+
+## Example
+```
 ./ohdns.sh -wl sub_wordlist.txt -d example.com -w output.txt
 
 
