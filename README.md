@@ -53,7 +53,7 @@ Usage:
 
 ## Example
 ```
-./ohdns.sh -wl sub_wordlist.txt -d example.com -w output.txt
+./ohdns.sh -wl sub_wordlist.txt -d example.com -w output.txt -i
 
 
  ██████╗ ██╗  ██╗██████╗ ███╗   ██╗███████╗
@@ -88,6 +88,21 @@ Very fast & accurate dns resolving and bruteforcing.
 [*] Saving output to output.txt
 
 [!] Found 367 valid domains in 6m43s
+
+```
+
+```
+cat output.txt
+...
+partner-service.<example.com> 	 [x.x.65.172]
+partner-service-testing.<example.com> 	 [x.x.65.172]
+partner.<example.com> 	 [edge-web.dual-gslb.<example.com>.]
+partners.<example.com> 	 [edge-web.dual-gslb.<example.com>.]
+partners.wg.<example.com> 	 [edge-web.dual-gslb.<example.com>.]
+payment-callback.<example.com> 	 [x.x.65.172]
+pci.<example.com> 	 [x.x.36.21 x.x.34.21 x.x.32.21 x.x.38.21]
+pci-testing.<example.com> 	 [x.x.36.21 x.x.34.21 x.x.38.21 x.x.32.21]
+...
 
 ```
 
