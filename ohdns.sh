@@ -367,11 +367,13 @@ massdns_resolve() {
 	log_message "[MassDNS] Merging output from 2 times."
 	cat "${tmp_massdns_work2}" "${tmp_massdns_work1}" | sort -u > "${massdns_work}"
 	cat "${tmp_massdns_domain_work1}" "${tmp_massdns_domain_work2}" | sort -u > "${domains_work}"
-	log_success "[MassDNS] $(domain_count) domains returned a DNS answer"
+	
 
 	if [[ $ips -eq 1 ]]; then
 		cat "${massdns_work}" | awk '{ group[$1] = (group[$1] == "" ? $3 : group[$1] OFS $3 ) } END { for (group_name in group) {x=group_name;gsub(/\.$/,"",x); print x, "\t","["group[group_name]"]"}}' | sort -u > "${domains_withip}"
 	fi
+
+	log_success "[MassDNS] $(domain_count) domains returned a DNS answer"
 }
 
 filter_wildcards_from_answers() {
