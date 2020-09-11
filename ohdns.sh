@@ -470,7 +470,7 @@ main() {
 	init
 
 	invoke_subfinder
-	#invoke_amass
+	invoke_amass
 
 	merge_wordlist
 	prepare_domains_list
