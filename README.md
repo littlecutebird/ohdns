@@ -10,6 +10,12 @@ A wrapper does subdomain enumeration with:
 * Massdns
 * Wildcard cleaner (modified). Fork from [puredns](https://github.com/d3mondev/puredns)
 
+## Requirements
+
+```
+sudo apt-get install python3
+```
+
 ## Usage
 ```
 ./ohdns.sh --help

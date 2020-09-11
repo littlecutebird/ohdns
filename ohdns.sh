@@ -1,6 +1,6 @@
 #!/bin/bash
 
-program_name="ohdns"
+program_name="OhDNS"
 program_version="v1.0"
 program_description="Very fast & accurate dns resolving and bruteforcing."
 
@@ -24,7 +24,7 @@ COL_PV='\033[1;30m'
 COL_RESET='\033[0m'
 
 help() {
-	echo "ohdns v1.0"
+	echo "OhDNS v1.0"
 	echo "Use subfinder, amass, and massdns to accurately resolve a large amount of subdomains and extract wildcard domains."
 	echo ""
 	usage
@@ -39,9 +39,11 @@ usage() {
 	echo ""
 	echo "	Optional:"
 	echo ""
-	echo "		-d, --domain	Target to scan"
-	echo "		-wl, --wordlist	wordlist to do bruteforce"
-	echo "		-ac, --amass-config	 Amass config file"
+	echo "		-d, --domain <domain>	Target to scan"
+	echo "		-wl, --wordlist	<filename>	Wordlist to do bruteforce"
+	echo "		-sc, --subfinder-config	<filename>	SubFinder config file"
+	echo "		-ac, --amass-config	<filename>	Amass config file"
+	echo "		-i, --ips	Show ips in output"
 	echo "		-sw, --skip-wildcard-check		Do no perform wildcard detection and filtering"
 	echo ""
 	echo "		-w,  --write <filename>			Write valid domains to a file"
@@ -104,8 +106,10 @@ parse_args() {
 	domains_file=''
 	massdns_file=''
 	amass_config=''
+	subfinder_config=''
 	wildcards_file=''
 	wildcard_answers_file=''
+	ips=0
 
 	resolvers_trusted_file="${CURRENT_DIR}/trusted.txt"
 	resolvers_file="${CURRENT_DIR}/trusted.txt"
@@ -126,6 +130,13 @@ parse_args() {
 			--amass-config|-ac)
 				amass_config=$2
 				shift
+				;;
+			--subfinder-config|-sc)
+				subfinder_config=$2
+				shift
+				;;
+			--ips|-i)
+				ips=1
 				;;
 			--skip-wildcard-check|-sw)
 				skip_wildcard_check=1
@@ -176,17 +187,18 @@ parse_args() {
 		exit 1
 	fi
 
-	if [[ -z "${domains_file}" ]]; then
-		usage
-		echo "Error: output file is required!"
-		echo ""
-		exit 1
-	fi
-
 	if [[ ! -z "${amass_config}" ]]; then
 		if [[ ! -f "${amass_config}" ]]; then
 			echo ""
 			echo "Error: Cannot open Amass-config file"
+			exit 1
+		fi
+	fi
+
+	if [[ ! -z "${subfinder_config}" ]]; then
+		if [[ ! -f "${subfinder_config}" ]]; then
+			echo ""
+			echo "Error: Cannot open Subfinder-config file"
 			exit 1
 		fi
 	fi
@@ -242,6 +254,7 @@ init() {
 	domains_work="${tempdir}/domains.txt"
 	massdns_work="${tempdir}/massdns.txt"
 	tempfile_work="${tempdir}/tempfile.txt"
+	domains_withip="${tempdir}/domains_withip.txt"
 
 	wildcards_work="${tempdir}/wildcards.txt"
 	wildcard_answers_work="${tempdir}/wildcard_answers.txt"
@@ -293,7 +306,11 @@ invoke_massdns() {
 invoke_subfinder() {
 	log_message "[SubFinder] Running ..."
 	start=`date +%s`
-	"${SUBFINDER_BIN}" -d ${domain} -o "${tempdir}/subfinder_output.txt" > /dev/null 2>&1
+	if [[ ! -z "${subfinder_config}" ]]; then
+		"${SUBFINDER_BIN}" -d ${domain} -o "${tempdir}/subfinder_output.txt"  -config ${subfinder_config} > /dev/null 2>&1
+	else
+		"${SUBFINDER_BIN}" -d ${domain} -o "${tempdir}/subfinder_output.txt" > /dev/null 2>&1
+	fi
 	end=`date +%s`
 	runtime=$((end-start))
 	log_success "[SubFinder] Finished | Duration: ${runtime}s"
@@ -345,6 +362,10 @@ massdns_resolve() {
 	cat "${tmp_massdns_work2}" "${tmp_massdns_work1}" | sort -u > "${massdns_work}"
 	cat "${tmp_massdns_domain_work1}" "${tmp_massdns_domain_work2}" | sort -u > "${domains_work}"
 	log_success "[MassDNS] $(domain_count) domains returned a DNS answer"
+
+	if [[ $ips -eq 1 ]]; then
+		cat "${massdns_work}" | awk '{ group[$1] = (group[$1] == "" ? $3 : group[$1] OFS $3 ) } END { for (group_name in group) {x=group_name;gsub(/\.$/,"",x); print x, "\t","["group[group_name]"]"}}' | sort -u > "${domains_withip}"
+	fi
 }
 
 filter_wildcards_from_answers() {
@@ -371,6 +392,9 @@ filter_wildcards_from_answers() {
 
 	# Extract valid domains
 	cat "${massdns_work}" | awk -F '. ' '{ print $1 }' | sort -u > "${domains_work}"
+	if [[ $ips -eq 1 ]]; then
+		cat "${massdns_work}" | awk '{ group[$1] = (group[$1] == "" ? $3 : group[$1] OFS $3 ) } END { for (group_name in group) {x=group_name;gsub(/\.$/,"",x); print x, "\t","["group[group_name]"]"}}' | sort -u > "${domains_withip}"
+	fi
 }
 
 cleanup_wildcards() {
@@ -402,11 +426,16 @@ cleanup_wildcards() {
 write_output_files() {
 	log_message "Saving output to ${domains_file}"
 	echo "" >&2
+	output_file="${domains_work}"
+	if [[ $ips -eq 1 ]]; then
+		output_file="${domains_withip}"
+	fi
+
 
 	if [[ -n "${domains_file}" ]]; then
-		cp "${domains_work}" "${domains_file}"
+		cp "${output_file}" "${domains_file}"
 	else
-		cat ${domains_work}
+		cat ${output_file}
 	fi
 
 	if [[ -n "${massdns_file}" ]]; then
@@ -441,7 +470,7 @@ main() {
 	init
 
 	invoke_subfinder
-	invoke_amass
+	#invoke_amass
 
 	merge_wordlist
 	prepare_domains_list
