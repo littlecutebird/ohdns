@@ -84,7 +84,13 @@ log_error() {
 }
 
 domain_count() {
-	echo "$(cat "${domains_work}" | wc -l)" 2>/dev/null
+	
+	if [[ $ips -eq 1 ]]; then
+		echo "$(cat "${domains_withip}" | wc -l)" 2>/dev/null
+	else
+		echo "$(cat "${domains_work}" | wc -l)" 2>/dev/null
+	fi
+	
 }
 
 wildcard_count() {
