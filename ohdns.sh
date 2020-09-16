@@ -8,6 +8,7 @@ CURRENT_DIR=$(pwd)
 AMASS_BIN="${CURRENT_DIR}/amass/amass"
 SUBFINDER_BIN="${CURRENT_DIR}/subfinder/subfinder"
 MASSDNS_BIN="${CURRENT_DIR}/massdns/massdns"
+GOWC_BIN="${CURRENT_DIR}/gowc/gowc"
 COL_LOGO='\033[0;36m'
 COL_PROGNAME='\033[1;32m'
 COL_PROGVERS='\033[0;36m'
@@ -259,12 +260,10 @@ init() {
 	log_success "Tempdir: ${tempdir}"
 	domains_work="${tempdir}/domains.txt"
 	massdns_work="${tempdir}/massdns.txt"
+	gowc_work="${tempdir}/gowc.txt"
 	tempfile_work="${tempdir}/tempfile.txt"
 	domains_withip="${tempdir}/domains_withip.txt"
 
-	wildcards_work="${tempdir}/wildcards.txt"
-	wildcard_answers_work="${tempdir}/wildcard_answers.txt"
-	wildcard_resolving_roots_work="${tempdir}/wildcard_resolving_roots.txt"
 }
 
 prepare_domains_list() {
@@ -376,58 +375,13 @@ massdns_resolve() {
 	log_success "[MassDNS] $(domain_count) domains returned a DNS answer"
 }
 
-filter_wildcards_from_answers() {
-	domains_grep_file="${tempdir}/wildcard_domains_grep"
-	answers_grep_file="${tempdir}/wildcard_answers_grep"
-	badrecords_file="${tempdir}/wildcard_badrecords"
-
-	# Create a grep file to match only the entries ending with a wildcard subdomains
-	sed -E 's/^\*\.(.*)$/.\1. /' "${wildcards_work}" > "${domains_grep_file}"
-
-	# Create a grep file to match only wildcard answers
-	sed -E 's/^(.*)$/ \1/' "${wildcard_answers_work}" > "${answers_grep_file}"
-
-	# Create a list of all the bad records
-	grep -Ff "${domains_grep_file}" "${massdns_work}" | grep -Ff "${answers_grep_file}" | sort -u > "${badrecords_file}"
-
-	# Remove bad records from massdns results file
-	sort -u "${massdns_work}" > "${tempfile_work}"
-	comm -2 -3 "${tempfile_work}" "${badrecords_file}" > "${massdns_work}"
-
-	# Add back known wildcard root subdomains that may have been filtered out
-	cat "${massdns_work}" "${wildcard_resolving_roots_work}" | sort -u > ${tempfile_work}
-	cp "${tempfile_work}" "${massdns_work}"
-
-	# Extract valid domains
-	cat "${massdns_work}" | awk -F '. ' '{ print $1 }' | sort -u > "${domains_work}"
-	if [[ $ips -eq 1 ]]; then
-		cat "${massdns_work}" | awk '{ group[$1] = (group[$1] == "" ? $3 : group[$1] OFS $3 ) } END { for (group_name in group) {x=group_name;gsub(/\.$/,"",x); print x, "\t","["group[group_name]"]"}}' | sort -u > "${domains_withip}"
-	fi
-}
-
 cleanup_wildcards() {
-	log_message "Detecting wildcard root subdomains..."
+	log_message "[GoWC] Cleaning wildcard root subdomains..."
 
-	$(dirname $0)/wildcarder --load-massdns-cache "${massdns_work}" --write-domains "${wildcards_work}" --write-answers "${wildcard_answers_work}" "${domains_work}" > /dev/null
-
-	if [[ ! $? -eq 0 ]]; then
-		log_error "An error happened running wildcarder. Exiting..."
-		cleanup
-		exit 1
-	fi
-
-	log_success "$(wildcard_count) wildcard root subdomains found"
-	if [[ ! "$(wildcard_count)" -eq 0 ]]; then
-		cat "${wildcards_work}" >&2
-
-		log_message "Resolving wildcards with trusted resolvers..."
-		sed -i 's/^\*\.//' "${wildcards_work}"
-		massdns_trusted "${wildcards_work}" "${tempfile_work}" "${wildcard_resolving_roots_work}"
-		log_success "Found $(cat "${wildcard_resolving_roots_work}" | wc -l) valid DNS answers for wildcards"
-
-		log_message "Cleaning wildcards from results..."
-		filter_wildcards_from_answers
-		log_success "$(domain_count) domains remaining"
+	if [[ $ips -eq 1 ]]; then
+		"${GOWC_BIN}" -m "${massdns_work}" -d ${domain} -o "${domains_withip}" -t 10 -i
+	else
+		"${GOWC_BIN}" -m "${massdns_work}" -d ${domain} -o "${domains_work}" -t 10 
 	fi
 }
 
@@ -448,15 +402,6 @@ write_output_files() {
 
 	if [[ -n "${massdns_file}" ]]; then
 		cp "${massdns_work}" "${massdns_file}"
-	fi
-
-	if [[ -n "${wildcards_file}" ]]; then
-		cp "${wildcards_work}" "${wildcards_file}"
-		sed -Ei 's/(.*)/*.\1/' "${wildcards_file}"
-	fi
-
-	if [[ -n "${wildcard_answers_file}" ]]; then
-		cp "${wildcard_answers_work}" "${wildcard_answers_file}"
 	fi
 }
 
@@ -487,12 +432,6 @@ main() {
 	if [[ "${skip_wildcard_check}" -eq 0 ]]; then
 		cleanup_wildcards
 	fi
-
-	if [[ "${skip_wildcard_check}" -eq 0 ]] && [[ ! "$(wildcard_count)" -eq 0 ]]; then
-		log_message "Removing straggling wildcard results..."
-		filter_wildcards_from_answers
-	fi
-
 	log_success "Found $(domain_count) valid domains!"
 
 	write_output_files
