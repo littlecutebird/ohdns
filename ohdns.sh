@@ -244,15 +244,6 @@ check_requirements() {
 		echo ""
 		exit 1
 	fi
-
-	# wildcarder
-	$(dirname $0)/wildcarder --version > /dev/null 2>&1
-	if [[ ! $? -eq 0 ]]; then
-		echo "Error: unable to execute wildcarder. Make sure it is present and that the requirements have been installed."
-		echo ""
-		echo "This might help: pip install -r requirements.txt"
-		exit 1
-	fi
 }
 
 init() {
@@ -379,9 +370,9 @@ cleanup_wildcards() {
 	log_message "[GoWC] Cleaning wildcard root subdomains..."
 
 	if [[ $ips -eq 1 ]]; then
-		"${GOWC_BIN}" -m "${massdns_work}" -d ${domain} -o "${domains_withip}" -t 10 -i
+		"${GOWC_BIN}" -m "${massdns_work}" -d ${domain} -o "${domains_withip}" -t 10 -i > /dev/null 2>&1
 	else
-		"${GOWC_BIN}" -m "${massdns_work}" -d ${domain} -o "${domains_work}" -t 10 
+		"${GOWC_BIN}" -m "${massdns_work}" -d ${domain} -o "${domains_work}" -t 10 > /dev/null 2>&1
 	fi
 }
 
