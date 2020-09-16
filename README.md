@@ -8,12 +8,12 @@ A wrapper does subdomain enumeration with:
 * Subfinder
 * Amass
 * Massdns
-* Wildcard cleaner (modified). Fork from [puredns](https://github.com/d3mondev/puredns)
+* GoWC - Wildcard cleaner. From [GoWC](https://github.com/sting8k/GoWC)
 
 ## Requirements
 
 ```
-sudo apt-get install python3
+Nothing
 ```
 
 ## Usage
