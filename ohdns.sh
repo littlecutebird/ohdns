@@ -33,10 +33,10 @@ help() {
 
 usage() {
 	echo "Usage:"
-	echo "	ohdns -wl wordlist.txt -d domain.com -w output.txt"
 	echo ""
 	echo "	Example:"
-	echo "		ohdns [args] [--skip-wildcard-check] [--help] -wl wordlist.txt -d domain.com"
+	echo "		ohdns [args] [--skip-wildcard-check] [--help] -wl sub_wordlist.txt -d domain.com"
+	echo "		ohdns -wl sub_wordlist.txt -d domain.com -w output.txt"
 	echo ""
 	echo "	Optional:"
 	echo ""
