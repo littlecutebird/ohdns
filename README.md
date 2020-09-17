@@ -10,10 +10,10 @@ A wrapper does subdomain enumeration with:
 * Massdns
 * GoWC - Wildcard cleaner. From [GoWC](https://github.com/sting8k/GoWC)
 
-## Requirements
+## Installation
 
 ```
-Nothing
+git clone https://gitlab.com/prawps/ohdns
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ Nothing
 ██║   ██║██╔══██║██║  ██║██║╚██╗██║╚════██║
 ╚██████╔╝██║  ██║██████╔╝██║ ╚████║███████║
  ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚══════╝
-				OhDNS v1.0
+								OhDNS v1.0
 
 Very fast & accurate dns resolving and bruteforcing.
 
