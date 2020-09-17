@@ -316,9 +316,9 @@ invoke_amass() {
 	log_message "[Amass] Running ..."
 	start=`date +%s`
 	if [[ ! -z "${amass_config}" ]]; then
-		"${AMASS_BIN}" enum --passive -nolocaldb -norecursive -noalts -d ${domain} -o "${tempdir}/amass_output.txt" -config ${amass_config} -timeout 8 -exclude "Brute Forcing" > /dev/null 2>&1
+		"${AMASS_BIN}" enum --passive -nolocaldb -norecursive -noalts -d ${domain} -o "${tempdir}/amass_output.txt" -config ${amass_config} -timeout 8 -exclude "URLScan" > /dev/null 2>&1
 	else
-		"${AMASS_BIN}" enum --passive -nolocaldb -norecursive -noalts -d ${domain} -o "${tempdir}/amass_output.txt" -timeout 8 -exclude "Brute Forcing" > /dev/null 2>&1
+		"${AMASS_BIN}" enum --passive -nolocaldb -norecursive -noalts -d ${domain} -o "${tempdir}/amass_output.txt" -timeout 8 -exclude "URLScan" > /dev/null 2>&1
 	fi
 	end=`date +%s`
 	runtime=$((end-start))
