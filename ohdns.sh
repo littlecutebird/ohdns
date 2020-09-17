@@ -368,12 +368,15 @@ massdns_resolve() {
 
 cleanup_wildcards() {
 	log_message "[GoWC] Cleaning wildcard root subdomains..."
-
+	start=`date +%s`
 	if [[ $ips -eq 1 ]]; then
 		"${GOWC_BIN}" -m "${massdns_work}" -d ${domain} -o "${domains_withip}" -t 10 -i > /dev/null 2>&1
 	else
 		"${GOWC_BIN}" -m "${massdns_work}" -d ${domain} -o "${domains_work}" -t 10 > /dev/null 2>&1
 	fi
+	end=`date +%s`
+	runtime=$((end-start))
+	log_success "[GoWC] Finished | Duration: ${runtime}s"
 }
 
 write_output_files() {
