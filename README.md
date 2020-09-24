@@ -17,6 +17,10 @@ git clone https://gitlab.com/prawps/ohdns
 ```
 
 ## Usage
+
+* (Should have) Amass config file. `-ac`
+* (Should have) Subfinder config file. `-sc`
+
 ```
 ./ohdns.sh --help
 
