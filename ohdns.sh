@@ -1,7 +1,7 @@
 #!/bin/bash
 
 program_name="OhDNS"
-program_version="v1.0"
+program_version="v1.2"
 program_description="Very fast & accurate dns resolving and bruteforcing."
 
 CURRENT_DIR=$(pwd)
@@ -25,7 +25,7 @@ COL_PV='\033[1;30m'
 COL_RESET='\033[0m'
 
 help() {
-	echo "OhDNS v1.0"
+	echo "OhDNS v1.2"
 	echo "Use subfinder, amass, and massdns to accurately resolve a large amount of subdomains and extract wildcard domains."
 	echo ""
 	usage
@@ -431,7 +431,7 @@ main() {
 	write_output_files
 	global_end=`date +%s`
 	global_runtime=$((global_end-global_start))
-	global_runtimex=$(printf '%dm%ds\n' $(($global_runtime%3600/60)) $(($global_runtime%60)))
+	global_runtimex=$(printf '%dh%dm%ds\n' $(($global_runtime/3600)) $(($global_runtime%3600/60)) $(($global_runtime%60)))
 	log_success "Found $(domain_count) valid domains in ${global_runtimex}"
 	cleanup
 }

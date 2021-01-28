@@ -31,11 +31,11 @@ git clone https://gitlab.com/prawps/ohdns
 ██║   ██║██╔══██║██║  ██║██║╚██╗██║╚════██║
 ╚██████╔╝██║  ██║██████╔╝██║ ╚████║███████║
  ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚══════╝
-								OhDNS v1.0
+								OhDNS v1.2
 
 Very fast & accurate dns resolving and bruteforcing.
 
-OhDNS v1.0
+OhDNS v1.2
 Use subfinder, amass, and massdns to accurately resolve a large amount of subdomains and extract wildcard domains.
 
 Usage:
@@ -72,7 +72,7 @@ Usage:
 ██║   ██║██╔══██║██║  ██║██║╚██╗██║╚════██║
 ╚██████╔╝██║  ██║██████╔╝██║ ╚████║███████║
  ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚══════╝
-                                ohdns v1.0
+                                ohdns v1.2
 
 Very fast & accurate dns resolving and bruteforcing.
 
