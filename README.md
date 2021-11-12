@@ -4,6 +4,17 @@ Original project: https://gitlab.com/prawps/ohdns
 
 Add -dl options to scan multiple domains
 
+
+```
+./ohdns.sh -wl sub_wordlist.txt -dl root_domains.txt -w output.txt 
+```
+
+ohdns + httpx + nuclei example
+
+```
+./ohdns.sh -wl sub_wordlist.txt -dl root_domains.txt -w ohdns_output.txt && httpx -list ohdns_output.txt -silent -o httpx_output.txt && nuclei -l httpx_output.txt -o nuclei_output.txt
+```
+
 ## Warning
 Don't use this to do dark things.
 
