@@ -41,6 +41,7 @@ usage() {
 	echo "	Optional:"
 	echo ""
 	echo "		-d, --domain <domain>	Target to scan"
+	echo "		-dl, --domain-list <file> File contains list of domains to scan"
 	echo "		-wl, --wordlist	<filename>	Wordlist to do bruteforce"
 	echo "		-sc, --subfinder-config	<filename>	SubFinder config file"
 	echo "		-ac, --amass-config	<filename>	Amass config file"
@@ -128,6 +129,10 @@ parse_args() {
 		case $1 in
 			--domain|-d)
 				domain=$2
+				shift
+				;;
+			--domain-list|-dl)
+				domain_input_file=$2
 				shift
 				;;
 			--wordlist|-wl)
@@ -225,10 +230,26 @@ parse_args() {
 			exit 1
 		fi
 
-		if [[ -z "${domain}" ]]; then
+		if [[ -z "${domain}" && -z "${domain_input_file}" ]]; then
 			usage
 			echo ""
-			echo "Error: no domain specified"
+			echo "Error: no domain specified. Use -d or -dl"
+			exit 1
+		else
+			if [[ -n "${domain_input_file}" ]]; then 
+				readarray -t domain_list < ${domain_input_file} # domain_list is the array contain all the root domains we wanna scan
+				# for i in "${domain_list[@]}"; do
+				# 	echo $i >> hihihi.txt
+				# done
+			else
+				domain_list=("${domain}")
+			fi
+		fi
+
+		if [[ -e "${domains_file}" ]]; then
+			usage 
+			echo ""
+			echo "Output file exists. Running can override your existing file!"
 			exit 1
 		fi
 	fi
@@ -262,7 +283,6 @@ prepare_domains_list() {
 	if [[ "${mode}" -eq 1 ]]; then
 		sed -E "s/^(.*)$/\\1.${domain}/" "${OUTPUT_TO_BE_RESOLVED}" > "${domains_work}"
 	fi
-
 	if [[ "${skip_sanitize}" -eq 0 ]]; then
 		log_message "Sanitizing list..."
 
@@ -310,6 +330,8 @@ invoke_subfinder() {
 	end=`date +%s`
 	runtime=$((end-start))
 	log_success "[SubFinder] Finished | Duration: ${runtime}s"
+	counted=$(cat "${tempdir}/subfinder_output.txt" | wc -l)
+	log_success "${counted} domains found by subfinder"
 }
 
 invoke_amass() {
@@ -323,6 +345,8 @@ invoke_amass() {
 	end=`date +%s`
 	runtime=$((end-start))
 	log_success "[Amass] Finished | Duration: ${runtime}s"
+	counted=$(cat "${tempdir}/amass_output.txt" | wc -l)
+	log_success "${counted} domains found by amass"
 }
 
 merge_wordlist() {
@@ -389,13 +413,13 @@ write_output_files() {
 
 
 	if [[ -n "${domains_file}" ]]; then
-		cp "${output_file}" "${domains_file}"
+		cat "${output_file}" >> "${domains_file}"
 	else
 		cat ${output_file}
 	fi
 
 	if [[ -n "${massdns_file}" ]]; then
-		cp "${massdns_work}" "${massdns_file}"
+		cat "${massdns_work}" >> "${massdns_file}"
 	fi
 }
 
@@ -414,26 +438,32 @@ main() {
 	print_header
 	parse_args $@
 	check_requirements	
-	init
+	
+	for domain in "${domain_list[@]}"; do
+		domain=`echo $domain | tr -d '\r'`
+		init
 
-	invoke_subfinder
-	invoke_amass
+		invoke_subfinder
+		invoke_amass
 
-	merge_wordlist
-	prepare_domains_list
-	massdns_resolve
+		merge_wordlist
+		prepare_domains_list
+		massdns_resolve
 
-	if [[ "${skip_wildcard_check}" -eq 0 ]]; then
-		cleanup_wildcards
-	fi
-	log_success "Found $(domain_count) valid domains!"
+		if [[ "${skip_wildcard_check}" -eq 0 ]]; then
+			cleanup_wildcards
+		fi
+		log_success "Found $(domain_count) valid domains for $domain!"
 
-	write_output_files
+		write_output_files
+		
+		cleanup
+	done
+
 	global_end=`date +%s`
 	global_runtime=$((global_end-global_start))
 	global_runtimex=$(printf '%dh%dm%ds\n' $(($global_runtime/3600)) $(($global_runtime%3600/60)) $(($global_runtime%60)))
-	log_success "Found $(domain_count) valid domains in ${global_runtimex}"
-	cleanup
+	log_success "Total running time: ${global_runtimex}"
 }
 
 main $@
