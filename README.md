@@ -1,5 +1,9 @@
 # OhDNS
 
+Original project: https://gitlab.com/prawps/ohdns 
+
+Add -dl options to scan multiple domains
+
 ## Warning
 Don't use this to do dark things.
 
